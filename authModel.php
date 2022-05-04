@@ -116,6 +116,12 @@ class AuthModel{
           $result = mysqli_query($link, $sql);
               
           if($result && mysqli_affected_rows($link)>0){
+            $to = $user['email'];
+            $subject = "login with success";
+            $txt = "thank for signup to the system with this mail:".$email;
+            $headers = "From: support@quatro.com";
+    
+            mail($to,$subject,$txt,$headers);
               returnJsonHttpResponse(true,["data" => ['email'=>$email,'XSRF-TOKEN'=>csrf_token()]]); 
           }else{
               returnJsonHttpResponse(false,["data" =>'internal error']);
@@ -166,6 +172,12 @@ class AuthModel{
     $user = mysqli_fetch_assoc($result);
                     
     if (password_verify($password, $user['password'])) {
+        $to = $user['email'];
+        $subject = "login with success";
+        $txt = "this your email: ".$email;
+        $headers = "From: support@quatro.com";
+
+        mail($to,$subject,$txt,$headers);
         returnJsonHttpResponse(true,["data" => ['email'=>$user['email'],'XSRF-TOKEN'=>csrf_token()]]);
     } else {
         $error = 'מייל או סיסמה אינם תקינים';
