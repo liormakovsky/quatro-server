@@ -25,60 +25,60 @@ class AuthModel{
   $request_body = json_decode(file_get_contents('php://input'));
 
   $form_valid = true;
-  $errors=[];
+  $errors='';
 
   if(empty($request_body->email)){        
-      $errors['email']= 'חובה להכניס מייל';
+      $errors = 'חובה להכניס מייל';
       $form_valid = false;
   }
 
   if(empty($request_body->passwordRegister)){        
-      $errors['password']= 'חובה להכניס סיסמה';
+      $errors = 'חובה להכניס סיסמה';
       $form_valid = false;
   }
 
   if(empty($request_body->passwordConfirmation)){        
-      $errors['passwordConfirmation']= 'חובה למלא את שדה אימות הסיסמה';
+      $errors = 'חובה למלא את שדה אימות הסיסמה';
       $form_valid = false;
   }
 
   if ($request_body->passwordRegister != $request_body->passwordConfirmation) {
-      $errors['password']= 'הסיסמה ואימות הסיסמה אינם תואמים';
+      $errors = 'הסיסמה ואימות הסיסמה אינם תואמים';
       $form_valid = false; 
   }
 
   if(empty($request_body->firstName)){        
-      $errors['firstName']= 'חובה להכניס שם פרטי';
+      $errors = 'חובה להכניס שם פרטי';
       $form_valid = false;
   }
 
   if(empty($request_body->lastName)){        
-      $errors['lastName']= 'חובה להכניס שם משפחה';
+      $errors = 'חובה להכניס שם משפחה';
       $form_valid = false;
   }
 
   if(empty($request_body->address)){        
-      $errors['address']= 'חובה להכניס כתובת';
+      $errors = 'חובה להכניס כתובת';
       $form_valid = false;
   }
 
   if(empty($request_body->city)){        
-      $errors['city']= 'חובה להכניס שם עיר';
+      $errors = 'חובה להכניס שם עיר';
       $form_valid = false;
   }
 
   if(empty($request_body->homeNumber)){        
-      $errors['homeNumber']= 'חובה להכניס מספר בית';
+      $errors = 'חובה להכניס מספר בית';
       $form_valid = false;
   }
 
   if(empty($request_body->phone)){        
-      $errors['phone']= 'חובה להכניס מספר טלפון';
+      $errors = 'חובה להכניס מספר טלפון';
       $form_valid = false;
   }
 
   if(!$form_valid){
-      returnJsonHttpResponse(false,["data" =>$error]);
+      returnJsonHttpResponse(false,["data" =>$errors]);
   }
           /* XSS attack (Cross-Site Scripting Attacks) - htmlspecialchars() | htmlentities + filter_input() */
           $email = trim(filter_var($request_body->email, FILTER_VALIDATE_EMAIL));
@@ -134,19 +134,21 @@ class AuthModel{
     $error = '';
     $request_body = json_decode(file_get_contents('php://input'));
 
-    /* XSS attack (Cross-Site Scripting Attacks) - htmlspecialchars() | htmlentities + filter_input() */
-    $email = trim(filter_var($request_body->email, FILTER_VALIDATE_EMAIL));
-    $password = trim(filter_var($request_body->password, FILTER_SANITIZE_STRING));
-      
-    if (!$email) {
-        $error = '* A valid email is required';
-        returnJsonHttpResponse(false,["data" =>$error]);
-    }
-    if (!$password) {
-        $error = '* A valid password is required';
+        
+    if (empty($request_body->email)) {
+        $error = 'שדה המייל הוא שדה חובה';
         returnJsonHttpResponse(false,["data" =>$error]);
     }
 
+    if (empty($request_body->password)) {
+        $error = 'שדה הסיסמה הוא שדה חובה';
+        returnJsonHttpResponse(false,["data" =>$error]);
+    }
+
+    /* XSS attack (Cross-Site Scripting Attacks) - htmlspecialchars() | htmlentities + filter_input() */
+    $email = trim(filter_var($request_body->email, FILTER_VALIDATE_EMAIL));
+    $password = trim(filter_var($request_body->password, FILTER_SANITIZE_STRING));
+  
     $link = mysqli_connect(MYSQL_HOST, MYSQL_USER, MYSQL_PWD, MYSQL_DB);
     mysqli_set_charset($link, 'utf8');
 
@@ -157,7 +159,7 @@ class AuthModel{
     $result = mysqli_query($link, $sql);
             
     if (empty($result) || mysqli_num_rows($result) !== 1) {
-        $error = '*Wrong email and password';
+        $error = 'מייל או סיסמה אינם תקינים';
         returnJsonHttpResponse(false,["data" =>$error]);
     }
                     
@@ -166,7 +168,7 @@ class AuthModel{
     if (password_verify($password, $user['password'])) {
         returnJsonHttpResponse(true,["data" => ['email'=>$user['email'],'XSRF-TOKEN'=>csrf_token()]]);
     } else {
-        $error = '*Wrong email and password';
+        $error = 'מייל או סיסמה אינם תקינים';
         returnJsonHttpResponse(false,["data" =>$error]);
     }
 
